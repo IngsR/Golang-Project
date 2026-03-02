@@ -1,0 +1,86 @@
+{{ define "base" }}
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Sistem Informasi Go - Platform informasi modern berbasis Golang"
+        />
+        <title>{{ .title }} — Sistem Informasi Go</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/css/style.css" />
+    </head>
+    <body>
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="container nav-content">
+                <a href="/" class="nav-brand">
+                    <span class="brand-icon">⚡</span>
+                    <span class="brand-text"
+                        >SistemInfo<span class="brand-accent">Go</span></span
+                    >
+                </a>
+                <div class="nav-links">
+                    <a href="/" class="nav-link">Beranda</a>
+                    <a href="/articles" class="nav-link">Artikel</a>
+                    {{ if .logged_in }}
+                    <a href="/articles/create" class="nav-link btn-nav"
+                        >+ Tulis Artikel</a
+                    >
+                    <div class="nav-user">
+                        <span class="user-greeting"
+                            >Halo, {{ .user_name }}</span
+                        >
+                        <a href="/logout" class="nav-link nav-logout">Keluar</a>
+                    </div>
+                    {{ else }}
+                    <a href="/login" class="nav-link">Masuk</a>
+                    <a href="/register" class="nav-link btn-nav">Daftar</a>
+                    {{ end }}
+                </div>
+                <button
+                    class="nav-toggle"
+                    id="navToggle"
+                    aria-label="Toggle menu"
+                >
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">{{ template "content" . }}</main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <span class="brand-icon">⚡</span>
+                        <span
+                            >SistemInfo<span class="brand-accent"
+                                >Go</span
+                            ></span
+                        >
+                    </div>
+                    <p class="footer-text">
+                        Dibangun dengan 💙 menggunakan Go & Gin Framework
+                    </p>
+                    <p class="footer-copy">
+                        &copy; 2026 Sistem Informasi Go. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </footer>
+
+        <script src="/static/js/app.js"></script>
+    </body>
+</html>
+{{ end }}

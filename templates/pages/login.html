@@ -1,0 +1,56 @@
+{{ template "base" . }} {{ define "content" }}
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">🔐</div>
+                <h1 class="auth-title">Masuk ke Akun</h1>
+                <p class="auth-subtitle">Masukkan email dan password Anda</p>
+            </div>
+
+            {{ if .error }}
+            <div class="alert alert-error">
+                <span class="alert-icon">⚠️</span>
+                <span>{{ .error }}</span>
+            </div>
+            {{ end }}
+
+            <form method="POST" action="/login" class="auth-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-input"
+                        placeholder="nama@email.com"
+                        required
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="••••••••"
+                        required
+                    />
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                    <span>Masuk</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>
+                    Belum punya akun?
+                    <a href="/register" class="auth-link">Daftar sekarang</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{{ end }}

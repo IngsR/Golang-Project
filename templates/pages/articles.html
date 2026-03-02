@@ -1,0 +1,62 @@
+{{ template "base" . }} {{ define "content" }}
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h1 class="section-title">
+                Semua <span class="gradient-text">Artikel</span>
+            </h1>
+            <p class="section-subtitle">
+                Jelajahi seluruh artikel yang tersedia
+            </p>
+        </div>
+
+        {{ if .logged_in }}
+        <div class="section-toolbar">
+            <a href="/articles/create" class="btn btn-primary">
+                <span>+ Tulis Artikel Baru</span>
+            </a>
+        </div>
+        {{ end }} {{ if .articles }}
+        <div class="articles-grid">
+            {{ range .articles }}
+            <article class="article-card">
+                <div class="article-card-body">
+                    <div class="article-meta">
+                        <span class="article-author">{{ .Author.Name }}</span>
+                        <span class="article-dot">·</span>
+                        <span class="article-date"
+                            >{{ formatDate .CreatedAt }}</span
+                        >
+                    </div>
+                    <h3 class="article-card-title">
+                        <a href="/articles/{{ .ID }}">{{ .Title }}</a>
+                    </h3>
+                    <p class="article-excerpt">{{ truncate .Content 150 }}</p>
+                </div>
+                <div class="article-card-footer">
+                    <a href="/articles/{{ .ID }}" class="read-more">
+                        Baca selengkapnya <span class="arrow">→</span>
+                    </a>
+                </div>
+            </article>
+            {{ end }}
+        </div>
+        {{ else }}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>Belum ada artikel</h3>
+            <p>Jadilah yang pertama menulis artikel di platform ini!</p>
+            {{ if .logged_in }}
+            <a href="/articles/create" class="btn btn-primary"
+                >Tulis Artikel Pertama</a
+            >
+            {{ else }}
+            <a href="/register" class="btn btn-primary"
+                >Daftar & Mulai Menulis</a
+            >
+            {{ end }}
+        </div>
+        {{ end }}
+    </div>
+</section>
+{{ end }}

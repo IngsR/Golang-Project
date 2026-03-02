@@ -1,0 +1,64 @@
+{{ template "base" . }} {{ define "content" }}
+<section class="section">
+    <div class="container">
+        <div class="form-card">
+            <div class="form-header">
+                <a href="/articles" class="back-link">← Kembali</a>
+                <h1 class="form-title">
+                    {{ if .is_edit }} ✏️ Edit Artikel {{ else }} 📝 Tulis
+                    Artikel Baru {{ end }}
+                </h1>
+            </div>
+
+            {{ if .error }}
+            <div class="alert alert-error">
+                <span class="alert-icon">⚠️</span>
+                <span>{{ .error }}</span>
+            </div>
+            {{ end }}
+
+            <form
+                method="POST"
+                action="{{ if .is_edit }}/articles/{{ .article.ID }}/edit{{ else }}/articles/create{{ end }}"
+                class="article-form"
+            >
+                <div class="form-group">
+                    <label for="title" class="form-label">Judul Artikel</label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        class="form-input"
+                        placeholder="Masukkan judul artikel yang menarik..."
+                        value="{{ if .is_edit }}{{ .article.Title }}{{ end }}"
+                        required
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="content" class="form-label">Konten</label>
+                    <textarea
+                        id="content"
+                        name="content"
+                        class="form-input form-textarea"
+                        placeholder="Tulis konten artikel Anda di sini..."
+                        rows="12"
+                        required
+                    >
+{{ if .is_edit }}{{ .article.Content }}{{ end }}</textarea
+                    >
+                </div>
+                <div class="form-actions">
+                    <a href="/articles" class="btn btn-outline">Batal</a>
+                    <button type="submit" class="btn btn-primary">
+                        {{ if .is_edit }}
+                        <span>💾 Simpan Perubahan</span>
+                        {{ else }}
+                        <span>🚀 Publikasikan</span>
+                        {{ end }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{{ end }}

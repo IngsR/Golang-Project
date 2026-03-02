@@ -1,0 +1,57 @@
+{{ template "base" . }} {{ define "content" }}
+<section class="section article-detail-section">
+    <div class="container">
+        <div class="article-detail">
+            <div class="article-detail-header">
+                <a href="/articles" class="back-link"
+                    >← Kembali ke Daftar Artikel</a
+                >
+                <h1 class="article-detail-title">{{ .article.Title }}</h1>
+                <div class="article-detail-meta">
+                    <div class="author-info">
+                        <div class="author-avatar">
+                            {{ slice .article.Author.Name 0 1 }}
+                        </div>
+                        <div>
+                            <span class="author-name"
+                                >{{ .article.Author.Name }}</span
+                            >
+                            <span class="article-date"
+                                >{{ formatDate .article.CreatedAt }}</span
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="article-detail-content">
+                {{ nl2br .article.Content }}
+            </div>
+
+            {{ if .logged_in }} {{ if eq .article.AuthorID .user_id }}
+            <div class="article-actions">
+                <a
+                    href="/articles/{{ .article.ID }}/edit"
+                    class="btn btn-outline"
+                    >✏️ Edit Artikel</a
+                >
+                <form
+                    method="POST"
+                    action="/articles/{{ .article.ID }}/delete"
+                    class="inline-form"
+                    onsubmit="
+                        return confirm(
+                            'Apakah Anda yakin ingin menghapus artikel ini?',
+                        );
+                    "
+                >
+                    <button type="submit" class="btn btn-danger">
+                        🗑️ Hapus
+                    </button>
+                </form>
+            </div>
+            {{ end }} {{ end }}
+        </div>
+    </div>
+</section>
+{{ end }}
