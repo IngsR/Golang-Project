@@ -102,6 +102,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // === Password Toggle Visibility ===
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function () {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.textContent = '👁️';
+            }
+        });
+    }
+
+    // === Form Loading State ===
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+
+    if (loginForm && loginBtn) {
+        loginForm.addEventListener('submit', function () {
+            loginBtn.classList.add('btn-loading');
+        });
+    }
+
     // === Intersection Observer untuk animasi scroll ===
     const observerOptions = {
         threshold: 0.1,
