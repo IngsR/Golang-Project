@@ -1,4 +1,4 @@
-{{ define "base" }}
+{{ define "header" }}
 <!doctype html>
 <html lang="id">
     <head>
@@ -56,7 +56,7 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="main-content">{{ template "content" . }}</main>
+        <main class="main-content">{{ end }} {{ define "footer" }}</main>
 
         <!-- Footer -->
         <footer class="footer">

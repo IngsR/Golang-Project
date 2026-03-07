@@ -1,4 +1,4 @@
-{{ template "base" . }} {{ define "content" }}
+{{ template "header" . }}
 <section class="section article-detail-section">
     <div class="container">
         <div class="article-detail">
@@ -10,11 +10,14 @@
                 <div class="article-detail-meta">
                     <div class="author-info">
                         <div class="author-avatar">
-                            {{ slice .article.Author.Name 0 1 }}
+                            {{ if .article.Author.Name }} {{ slice
+                            .article.Author.Name 0 1 }} {{ else }} U {{ end }}
                         </div>
                         <div>
                             <span class="author-name"
-                                >{{ .article.Author.Name }}</span
+                                >{{ if .article.Author.Name }}{{
+                                .article.Author.Name }}{{ else }}Pengguna Tdk
+                                Dikenal{{ end }}</span
                             >
                             <span class="article-date"
                                 >{{ formatDate .article.CreatedAt }}</span
@@ -54,4 +57,4 @@
         </div>
     </div>
 </section>
-{{ end }}
+{{ template "footer" . }}

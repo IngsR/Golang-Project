@@ -1,17 +1,26 @@
 package handlers
 
 import (
-	"goproject/database"
-	"goproject/models"
+	"goproject/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-// HomeHandler menampilkan halaman beranda dengan artikel terbaru
-func HomeHandler(c *gin.Context) {
-	var articles []models.Article
-	database.DB.Preload("Author").Order("created_at DESC").Limit(6).Find(&articles)
+type HomeHandler struct {
+	articleService services.ArticleService
+}
+
+func NewHomeHandler(service services.ArticleService) *HomeHandler {
+	return &HomeHandler{articleService: service}
+}
+
+// ShowHome menampilkan halaman beranda dengan artikel terbaru
+func (h *HomeHandler) ShowHome(c *gin.Context) {
+	articles, err := h.articleService.GetHomeArticles()
+	if err != nil {
+		articles = nil // Fallback safe
+	}
 
 	loggedIn, _ := c.Get("logged_in")
 	userName, _ := c.Get("user_name")

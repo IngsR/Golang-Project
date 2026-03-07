@@ -5,6 +5,8 @@ import (
 	"goproject/database"
 	"goproject/handlers"
 	"goproject/middleware"
+	"goproject/repositories"
+	"goproject/services"
 	"html/template"
 	"log"
 	"strings"
@@ -26,6 +28,19 @@ func main() {
 	// Setup Gin router
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+
+	// Inisialisasi Repositories (Data Layer)
+	userRepo := repositories.NewUserRepository()
+	articleRepo := repositories.NewArticleRepository()
+
+	// Inisialisasi Services (Business Logic Layer)
+	authService := services.NewAuthService(userRepo)
+	articleService := services.NewArticleService(articleRepo)
+
+	// Inisialisasi Handlers (HTTP/Controller Layer)
+	homeHandler := handlers.NewHomeHandler(articleService)
+	authHandler := handlers.NewAuthHandler(authService)
+	articleHandler := handlers.NewArticleHandler(articleService)
 
 	// Custom template functions
 	r.SetFuncMap(template.FuncMap{
@@ -54,27 +69,27 @@ func main() {
 
 	// === ROUTES ===
 
-	// Halaman publik
-	r.GET("/", handlers.HomeHandler)
-	r.GET("/login", handlers.ShowLogin)
-	r.POST("/login", handlers.Login)
-	r.GET("/register", handlers.ShowRegister)
-	r.POST("/register", handlers.Register)
-	r.GET("/logout", handlers.Logout)
+	// Halaman publik (Guest/Public)
+	r.GET("/", homeHandler.ShowHome)
+	r.GET("/login", authHandler.ShowLogin)
+	r.POST("/login", authHandler.Login)
+	r.GET("/register", authHandler.ShowRegister)
+	r.POST("/register", authHandler.Register)
 
-	// Halaman artikel (publik: lihat, login required: buat/edit/hapus)
-	r.GET("/articles", handlers.ListArticles)
-	r.GET("/articles/:id", handlers.ShowArticle)
+	r.GET("/articles", articleHandler.ListArticles)
+	r.GET("/articles/:id", articleHandler.ShowArticle)
 
-	// Grup route yang memerlukan autentikasi
+	// Grup route yang memerlukan autentikasi (Wajib Login)
 	auth := r.Group("/")
 	auth.Use(middleware.AuthRequired())
 	{
-		auth.GET("/articles/create", handlers.ShowCreateForm)
-		auth.POST("/articles/create", handlers.CreateArticle)
-		auth.GET("/articles/:id/edit", handlers.ShowEditForm)
-		auth.POST("/articles/:id/edit", handlers.UpdateArticle)
-		auth.POST("/articles/:id/delete", handlers.DeleteArticle)
+		auth.GET("/logout", authHandler.Logout)
+
+		auth.GET("/articles/create", articleHandler.ShowCreateForm)
+		auth.POST("/articles/create", articleHandler.CreateArticle)
+		auth.GET("/articles/:id/edit", articleHandler.ShowEditForm)
+		auth.POST("/articles/:id/edit", articleHandler.UpdateArticle)
+		auth.POST("/articles/:id/delete", articleHandler.DeleteArticle)
 	}
 
 	// Jalankan server

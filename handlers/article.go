@@ -1,36 +1,61 @@
 package handlers
 
 import (
-	"goproject/database"
-	"goproject/models"
+	"goproject/services"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-// ListArticles menampilkan daftar semua artikel
-func ListArticles(c *gin.Context) {
-	var articles []models.Article
-	database.DB.Preload("Author").Order("created_at DESC").Find(&articles)
+type ArticleHandler struct {
+	articleService services.ArticleService
+}
 
+func NewArticleHandler(service services.ArticleService) *ArticleHandler {
+	return &ArticleHandler{articleService: service}
+}
+
+// ListArticles menampilkan daftar semua artikel dengan pagination
+func (h *ArticleHandler) ListArticles(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit := 10 // Pagination limit
+	articles, err := h.articleService.GetAllArticlesPaginated(page, limit)
+	if err != nil {
+		articles = nil
+	}
+
+	// Logic view aman mengatasi blank screen
 	loggedIn, _ := c.Get("logged_in")
 	userName, _ := c.Get("user_name")
 
+	hasPrev := page > 1
+	hasNext := len(articles) == limit
+
 	c.HTML(http.StatusOK, "articles.html", gin.H{
-		"title":     "Daftar Artikel",
-		"articles":  articles,
-		"logged_in": loggedIn,
-		"user_name": userName,
+		"title":       "Daftar Artikel",
+		"articles":    articles,
+		"logged_in":   loggedIn,
+		"user_name":   userName,
+		"page":        page,
+		"has_prev":    hasPrev,
+		"has_next":    hasNext,
+		"prev_page":   page - 1,
+		"next_page":   page + 1,
 	})
 }
 
 // ShowArticle menampilkan detail satu artikel
-func ShowArticle(c *gin.Context) {
+func (h *ArticleHandler) ShowArticle(c *gin.Context) {
 	id := c.Param("id")
-	var article models.Article
-	result := database.DB.Preload("Author").First(&article, id)
-	if result.Error != nil {
+	
+	article, err := h.articleService.GetArticleByID(id)
+	if err != nil {
 		c.HTML(http.StatusNotFound, "home.html", gin.H{
 			"title": "Tidak Ditemukan",
 			"error": "Artikel tidak ditemukan",
@@ -52,7 +77,7 @@ func ShowArticle(c *gin.Context) {
 }
 
 // ShowCreateForm menampilkan form untuk membuat artikel baru
-func ShowCreateForm(c *gin.Context) {
+func (h *ArticleHandler) ShowCreateForm(c *gin.Context) {
 	loggedIn, _ := c.Get("logged_in")
 	userName, _ := c.Get("user_name")
 
@@ -65,36 +90,19 @@ func ShowCreateForm(c *gin.Context) {
 }
 
 // CreateArticle memproses pembuatan artikel baru
-func CreateArticle(c *gin.Context) {
+func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 	userID, _ := c.Get("user_id")
 
-	if title == "" || content == "" {
+	article, err := h.articleService.CreateArticle(title, content, userID.(uint))
+	
+	if err != nil {
 		loggedIn, _ := c.Get("logged_in")
 		userName, _ := c.Get("user_name")
 		c.HTML(http.StatusOK, "article_form.html", gin.H{
 			"title":     "Buat Artikel Baru",
-			"error":     "Judul dan konten harus diisi",
-			"logged_in": loggedIn,
-			"user_name": userName,
-			"is_edit":   false,
-		})
-		return
-	}
-
-	article := models.Article{
-		Title:    title,
-		Content:  content,
-		AuthorID: userID.(uint),
-	}
-
-	if err := database.DB.Create(&article).Error; err != nil {
-		loggedIn, _ := c.Get("logged_in")
-		userName, _ := c.Get("user_name")
-		c.HTML(http.StatusOK, "article_form.html", gin.H{
-			"title":     "Buat Artikel Baru",
-			"error":     "Gagal menyimpan artikel",
+			"error":     err.Error(),
 			"logged_in": loggedIn,
 			"user_name": userName,
 			"is_edit":   false,
@@ -106,18 +114,12 @@ func CreateArticle(c *gin.Context) {
 }
 
 // ShowEditForm menampilkan form untuk mengedit artikel
-func ShowEditForm(c *gin.Context) {
+func (h *ArticleHandler) ShowEditForm(c *gin.Context) {
 	id := c.Param("id")
-	var article models.Article
-	result := database.DB.First(&article, id)
-	if result.Error != nil {
-		c.Redirect(http.StatusFound, "/articles")
-		return
-	}
-
-	// Pastikan hanya pemilik artikel yang bisa edit
 	userID, _ := c.Get("user_id")
-	if article.AuthorID != userID.(uint) {
+	
+	article, err := h.articleService.GetArticleByID(id)
+	if err != nil || article.AuthorID != userID.(uint) {
 		c.Redirect(http.StatusFound, "/articles")
 		return
 	}
@@ -135,31 +137,24 @@ func ShowEditForm(c *gin.Context) {
 }
 
 // UpdateArticle memproses pembaruan artikel
-func UpdateArticle(c *gin.Context) {
+func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 	id := c.Param("id")
-	var article models.Article
-	result := database.DB.First(&article, id)
-	if result.Error != nil {
-		c.Redirect(http.StatusFound, "/articles")
-		return
-	}
-
-	// Pastikan hanya pemilik artikel yang bisa update
-	userID, _ := c.Get("user_id")
-	if article.AuthorID != userID.(uint) {
-		c.Redirect(http.StatusFound, "/articles")
-		return
-	}
-
 	title := c.PostForm("title")
 	content := c.PostForm("content")
+	userID, _ := c.Get("user_id")
 
-	if title == "" || content == "" {
+	err := h.articleService.UpdateArticle(id, title, content, userID.(uint))
+	
+	if err != nil {
 		loggedIn, _ := c.Get("logged_in")
 		userName, _ := c.Get("user_name")
+		
+		// Re-fetch article for the form if validation failed (not not-found)
+		article, _ := h.articleService.GetArticleByID(id)
+	
 		c.HTML(http.StatusOK, "article_form.html", gin.H{
 			"title":     "Edit Artikel",
-			"error":     "Judul dan konten harus diisi",
+			"error":     err.Error(),
 			"article":   article,
 			"logged_in": loggedIn,
 			"user_name": userName,
@@ -168,31 +163,20 @@ func UpdateArticle(c *gin.Context) {
 		return
 	}
 
-	database.DB.Model(&article).Updates(models.Article{
-		Title:   title,
-		Content: content,
-	})
-
 	c.Redirect(http.StatusFound, "/articles/"+id)
 }
 
 // DeleteArticle menghapus artikel
-func DeleteArticle(c *gin.Context) {
+func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 	id := c.Param("id")
-	var article models.Article
-	result := database.DB.First(&article, id)
-	if result.Error != nil {
-		c.Redirect(http.StatusFound, "/articles")
-		return
-	}
-
-	// Pastikan hanya pemilik artikel yang bisa hapus
 	userID, _ := c.Get("user_id")
-	if article.AuthorID != userID.(uint) {
+
+	err := h.articleService.DeleteArticle(id, userID.(uint))
+	if err != nil {
+		// Just redirect on error for now to keep it simple, or show alert
 		c.Redirect(http.StatusFound, "/articles")
 		return
 	}
 
-	database.DB.Delete(&article)
 	c.Redirect(http.StatusFound, "/articles")
 }

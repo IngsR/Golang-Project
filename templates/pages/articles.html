@@ -1,4 +1,4 @@
-{{ template "base" . }} {{ define "content" }}
+{{ template "header" . }}
 <section class="section">
     <div class="container">
         <div class="section-header">
@@ -22,7 +22,10 @@
             <article class="article-card">
                 <div class="article-card-body">
                     <div class="article-meta">
-                        <span class="article-author">{{ .Author.Name }}</span>
+                        <span class="article-author"
+                            >{{ if .Author.Name }}{{ .Author.Name }}{{ else
+                            }}User{{ end }}</span
+                        >
                         <span class="article-dot">·</span>
                         <span class="article-date"
                             >{{ formatDate .CreatedAt }}</span
@@ -39,6 +42,41 @@
                     </a>
                 </div>
             </article>
+            {{ end }}
+        </div>
+
+        <!-- Pagination UI -->
+        <div
+            class="pagination-wrapper"
+            style="margin-top: 30px; text-align: center"
+        >
+            {{ if .has_prev }}
+            <a
+                href="/articles?page={{ .prev_page }}"
+                class="btn btn-outline"
+                style="margin-right: 10px"
+                >&laquo; Sebelumnya</a
+            >
+            {{ end }}
+
+            <span
+                class="pagination-info"
+                style="
+                    padding: 10px 15px;
+                    background: var(--surface);
+                    border-radius: 8px;
+                    font-weight: bold;
+                "
+                >Halaman {{ .page }}</span
+            >
+
+            {{ if .has_next }}
+            <a
+                href="/articles?page={{ .next_page }}"
+                class="btn btn-outline"
+                style="margin-left: 10px"
+                >Selanjutnya &raquo;</a
+            >
             {{ end }}
         </div>
         {{ else }}
@@ -59,4 +97,4 @@
         {{ end }}
     </div>
 </section>
-{{ end }}
+{{ template "footer" . }}
