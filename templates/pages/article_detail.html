@@ -28,7 +28,29 @@
             </div>
 
             <div class="article-detail-content">
-                {{ nl2br .article.Content }}
+                {{ if .article.CoverImage }}
+                <div
+                    style="
+                        margin-bottom: 30px;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                    "
+                >
+                    <img
+                        src="{{ .article.CoverImage }}"
+                        alt="{{ .article.Title }}"
+                        style="
+                            width: 100%;
+                            height: auto;
+                            max-height: 500px;
+                            object-fit: cover;
+                            display: block;
+                        "
+                    />
+                </div>
+                {{ end }}
+                <div class="quill-content">{{ safeHTML .article.Content }}</div>
             </div>
 
             {{ if .logged_in }} {{ if eq .article.AuthorID .user_id }}

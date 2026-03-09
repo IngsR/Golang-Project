@@ -7,8 +7,8 @@ import (
 )
 
 type ArticleService interface {
-	CreateArticle(title, content string, authorID uint) (*models.Article, error)
-	UpdateArticle(id string, title, content string, authorID uint) error
+	CreateArticle(title, content, coverImage string, authorID uint) (*models.Article, error)
+	UpdateArticle(id string, title, content, coverImage string, authorID uint) error
 	DeleteArticle(id string, authorID uint) error
 	GetArticleByID(id string) (*models.Article, error)
 	GetAllArticlesPaginated(page, limit int) ([]models.Article, error)
@@ -23,15 +23,16 @@ func NewArticleService(repo repositories.ArticleRepository) ArticleService {
 	return &articleService{articleRepo: repo}
 }
 
-func (s *articleService) CreateArticle(title, content string, authorID uint) (*models.Article, error) {
+func (s *articleService) CreateArticle(title, content, coverImage string, authorID uint) (*models.Article, error) {
 	if title == "" || content == "" {
 		return nil, errors.New("Judul dan konten harus diisi")
 	}
 
 	article := &models.Article{
-		Title:    title,
-		Content:  content,
-		AuthorID: authorID,
+		Title:      title,
+		Content:    content,
+		CoverImage: coverImage,
+		AuthorID:   authorID,
 	}
 
 	err := s.articleRepo.Create(article)
@@ -42,7 +43,7 @@ func (s *articleService) CreateArticle(title, content string, authorID uint) (*m
 	return article, nil
 }
 
-func (s *articleService) UpdateArticle(id string, title, content string, authorID uint) error {
+func (s *articleService) UpdateArticle(id string, title, content, coverImage string, authorID uint) error {
 	if title == "" || content == "" {
 		return errors.New("Judul dan konten harus diisi")
 	}
@@ -58,6 +59,9 @@ func (s *articleService) UpdateArticle(id string, title, content string, authorI
 
 	article.Title = title
 	article.Content = content
+	if coverImage != "" {
+		article.CoverImage = coverImage
+	}
 
 	return s.articleRepo.Update(article)
 }

@@ -9,6 +9,7 @@ import (
 	"goproject/services"
 	"html/template"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -55,6 +56,13 @@ func main() {
 		},
 		"nl2br": func(s string) template.HTML {
 			return template.HTML(strings.ReplaceAll(template.HTMLEscapeString(s), "\n", "<br>"))
+		},
+		"safeHTML": func(s string) template.HTML {
+			return template.HTML(s)
+		},
+		"stripHTML": func(s string) string {
+			re := regexp.MustCompile(`<[^>]*>`)
+			return re.ReplaceAllString(s, "")
 		},
 	})
 

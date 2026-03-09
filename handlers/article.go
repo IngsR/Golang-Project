@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"goproject/services"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -95,7 +99,18 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 	content := c.PostForm("content")
 	userID, _ := c.Get("user_id")
 
-	article, err := h.articleService.CreateArticle(title, content, userID.(uint))
+	coverImage := ""
+	file, err := c.FormFile("cover_image")
+	if err == nil {
+		filename := fmt.Sprintf("%d_%s", time.Now().Unix(), filepath.Base(file.Filename))
+		uploadPath := "./static/uploads/" + filename
+		os.MkdirAll("./static/uploads", os.ModePerm)
+		if errSave := c.SaveUploadedFile(file, uploadPath); errSave == nil {
+			coverImage = "/static/uploads/" + filename
+		}
+	}
+
+	article, err := h.articleService.CreateArticle(title, content, coverImage, userID.(uint))
 	
 	if err != nil {
 		loggedIn, _ := c.Get("logged_in")
@@ -143,7 +158,18 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 	content := c.PostForm("content")
 	userID, _ := c.Get("user_id")
 
-	err := h.articleService.UpdateArticle(id, title, content, userID.(uint))
+	coverImage := ""
+	file, err := c.FormFile("cover_image")
+	if err == nil {
+		filename := fmt.Sprintf("%d_%s", time.Now().Unix(), filepath.Base(file.Filename))
+		uploadPath := "./static/uploads/" + filename
+		os.MkdirAll("./static/uploads", os.ModePerm)
+		if errSave := c.SaveUploadedFile(file, uploadPath); errSave == nil {
+			coverImage = "/static/uploads/" + filename
+		}
+	}
+
+	err = h.articleService.UpdateArticle(id, title, content, coverImage, userID.(uint))
 	
 	if err != nil {
 		loggedIn, _ := c.Get("logged_in")
